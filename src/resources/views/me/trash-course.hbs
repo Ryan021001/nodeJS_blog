@@ -1,0 +1,166 @@
+<form class='mt-4 container-form' method='POST' action='/courses/handle-form-action'>
+    <div>
+        <h2>Music deleted</h2>
+        <a href='/me/stored/courses'>My music</a>
+        <div class='mt-4 d-flex align-items-center'>
+            <div class='form-check'>
+                <input class='form-check-input' type='checkbox' value='' id='checkbox-all' />
+                <label class='form-check-label' for='checkbox-all'>
+                    Chon tat ca
+                </label>
+            </div>
+
+            <select class='form-control form-control-sm checkbox-select-all-options' name='action' required>
+                <option value=''>----Hanh dong----</option>
+                <option value='deleteForce'>xoa vinh vien</option>
+                <option value='restore'>khoi phuc</option>
+            </select>
+
+            <button class='btn btn-primary btn-sm check-all-submit-btn' disabled>Thuc hien</button>
+
+        </div>
+    </div>
+
+    <table class='table mt-4'>
+        <thead>
+            <tr>
+
+                <th scope='col' colspan='2'>#</th>
+                <th scope='col'>Tên</th>
+                <th scope='col'>Thể Loại</th>
+                <th scope='col'>Thời gian xóa</th>
+                <th scope='col'></th>
+
+            </tr>
+        </thead>
+        <tbody>
+
+            {{#each courses}}
+                <tr>
+                    <td>
+                        <div class='form-check'>
+                            <input class='form-check-input' type='checkbox' name='courseIDs[]' value='{{this._id}}' />
+                        </div>
+                    </td>
+                    <th scope='row'>{{sum @index 1}}</th>
+                    <td>{{this.name}}</td>
+                    <td>{{this.description}}</td>
+                    <td>{{this.deletedAt}}</td>
+                    <td>
+                        <a href='' class='btn btn-link btn-restore' data-id='{{this._id}}'>Khôi phục</a>
+                        <a
+                            href=''
+                            class='btn btn-link'
+                            data-toggle='modal'
+                            data-target='#delete-course-modal'
+                            data-id='{{this._id}}'
+                        >Xóa</a>
+                    </td>
+
+                </tr>
+
+            {{else}}
+                <tr>
+                    <td colspan='5' class='text-center'>
+                        Thùng rác trống
+                        <a href='/me/stored/courses'>Danh sách bài hát</a>
+                    </td>
+                </tr>
+
+            {{/each}}
+
+        </tbody>
+    </table>
+</form>
+
+{{! model-delele }}
+
+<div id='delete-course-modal' class='modal' tabindex='-1' role='dialog'>
+    <div class='modal-dialog' role='document'>
+        <div class='modal-content'>
+            <div class='modal-header'>
+                <h5 class='modal-title'>Xóa Bài Hát?</h5>
+                <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                    <span aria-hidden='true'>&times;</span>
+                </button>
+            </div>
+            <div class='modal-body'>
+                <p>Hành động này không thể khôi phục, bạn có chắc vẫn muốn thực hiện?</p>
+            </div>
+            <div class='modal-footer'>
+                <button id='btn-delete-course' type='button' class='btn btn-danger'>Xóa vĩnh viễn</button>
+                <button type='button' class='btn btn-secondary' data-dismiss='modal'>Hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{! }}
+
+<form id='restore-course-form' method='POST'></form>
+<form id='delete-course-form' method='POST'></form>
+
+{{!--prettier-ignore --}}
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var courseId;
+        var formDelete = document.getElementById('delete-course-form');
+        var containerForm = document.querySelector('.container-form');
+        var btnDeleteCourse = document.getElementById('btn-delete-course');
+        var checkboxAll = $('#checkbox-all');
+        var courseItemsCheckbox = $("input[name='courseIDs[]']");
+        var checkAllSubmitBtn = $('.check-all-submit-btn');
+
+        $('#delete-course-modal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            courseId = button.data('id');
+            console.log(courseId);
+        });
+        btnDeleteCourse.onclick = function () {
+            formDelete.action = '/courses/' + courseId + '/force?_method=DELETE';
+            formDelete.submit();
+        };
+        var restoreForm = document.getElementById('restore-course-form');
+        var restoreBtnAll = document.querySelectorAll('.btn-restore');
+        restoreBtnAll.forEach(function (restoreBtn) {
+            restoreBtn.onclick = function (e) {
+                e.preventDefault();
+                var courseId = restoreBtn.dataset.id;
+                restoreForm.action = '/courses/' + courseId + '/restore?_method=PATCH';
+                restoreForm.submit();
+            };
+        });
+
+        checkboxAll.change(function () {
+            var isCheckedAll = $(this).prop('checked');
+            courseItemsCheckbox.prop('checked', isCheckedAll);
+            renderCheckAllSubmitBtn();
+        });
+
+        courseItemsCheckbox.change(function () {
+            var isCheckedAll = courseItemsCheckbox.length === $("input[name='courseIDs[]']:checked").length;
+            checkboxAll.prop('checked', isCheckedAll);
+            renderCheckAllSubmitBtn();
+        });
+        {{!-- checkAllSubmitBtn.onSubmit = function (e) {
+            let isSubmitable = !$(this).hasClass('disabled');
+            if (!isSubmitable) {
+                e.preventDefault();
+            }
+        } --}}
+
+        function renderCheckAllSubmitBtn() {
+            var checkedCount = $("input[name='courseIDs[]']:checked").length;
+            if (checkedCount > 0) {
+                checkAllSubmitBtn.attr('disabled',false);
+            } else {
+                checkAllSubmitBtn.attr('disabled',true);
+            }
+        }
+
+
+    });
+
+
+</script>
