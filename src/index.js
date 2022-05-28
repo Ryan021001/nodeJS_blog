@@ -8,6 +8,8 @@ const route = require('./routes');
 const db = require('./config/db');
 const methodOverride = require('method-override');
 
+const sortMiddleware = require('./app/middlewares/SortMiddleware');
+
 // doc file tĩnh
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -30,6 +32,9 @@ app.use(morgan('combined'));
 // use method put, patch,....
 app.use(methodOverride('_method'));
 
+// use middlewares
+app.use(sortMiddleware);
+
 //templates engine
 
 app.engine(
@@ -38,6 +43,28 @@ app.engine(
         extname: '.hbs',
         helpers: {
             sum: (a, b) => a + b,
+            sortable: (field, sort) => {
+                const sortType = field === sort.column ? sort.type : 'default';
+
+                const icons = {
+                    default: 'oi oi-elevator',
+                    desc: 'oi oi-sort-descending',
+                    asc: 'oi oi-sort-ascending',
+                };
+
+                const types = {
+                    default: 'desc',
+                    asc: 'desc',
+                    desc: 'asc',
+                };
+
+                const icon = icons[sortType];
+                const type = types[sortType];
+
+                return `<a href="?_sort&column=${field}&type=${type}">
+                        <span class="${icon}"></span>
+                    </a>`;
+            },
         },
     }),
 );

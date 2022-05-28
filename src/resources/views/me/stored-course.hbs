@@ -21,14 +21,24 @@
         </div>
 
     </div>
+    {{!-- {{_sort.type}} --}}
 
     <table class='table mt-4'>
         <thead>
             <tr>
                 <th scope='col' colspan='2'>#</th>
-                <th scope='col'>Tên</th>
-                <th scope='col'>Thể Loại</th>
-                <th scope='col'>Thời gian tạo</th>
+                <th scope='col'>
+                    Tên
+                    {{{sortable 'name' _sort}}}
+                </th>
+                <th scope='col'>
+                    Thể Loại
+                    {{{sortable 'description' _sort}}}
+                </th>
+                <th scope='col'>
+                    Thời gian tạo
+                    {{{sortable 'createdAt' _sort}}}
+                </th>
                 <th scope='col'></th>
             </tr>
 
